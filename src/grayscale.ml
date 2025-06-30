@@ -10,20 +10,22 @@ let transform image =
   new_image
 ;;
 
-(*let%expect_test "transform" =
+let%expect_test "transform" =
   (* This test uses existing files on the filesystem. *)
   let transformed_image =
     transform (Image.load_ppm ~filename:"images/beach_portrait.ppm")
   in
-  let image1 (r, g, b)= Image.get transformed_image ~x:0 ~y:0 in 
-  print_s [%message image1];
+  let pixel_sum image = Image.foldi image ~init:0 ~f:( + ) in
+  let ref_image =
+    load_ppm ~filename:"images/reference-beach_portrait_gray.ppm"
+  in
+  print_s [%message pixel_sum transformed_image];
   [%expect
     {|
-        (load_ppm ~filename:"images/reference-beach_portrait_gray.ppm")
-        print_s [%message (pixels)]);]
+        ()
+        print_s [%message (pixels_sum ref_image)];
     |}]
 ;;
-*)
 
 let command =
   Command.basic
