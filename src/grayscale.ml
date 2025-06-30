@@ -15,8 +15,8 @@ let transform image =
   let transformed_image =
     transform (Image.load_ppm ~filename:"images/beach_portrait.ppm")
   in
-  let pixels = Image.mean_pixel transformed_image in 
-  print_s [%message pixels];
+  let image1 (r, g, b)= Image.get transformed_image ~x:0 ~y:0 in 
+  print_s [%message image1];
   [%expect
     {|
         (load_ppm ~filename:"images/reference-beach_portrait_gray.ppm")
