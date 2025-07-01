@@ -1,16 +1,35 @@
 open Core
 
-(* You need to change the implementation of this function so that it
-   replaces the "blue" pixels of the foreground image with pixels from
-   the corresponding position in the background image instead of
-   just ignoring the background image and returning the foreground image.
-*)
-
 let transform ~foreground ~background =
-  let is_blue (r, g, b) = b > r + g in
+  (*r/2 for "improved" green screen*)
+  let is_blue (r, g, b) = b > (r / 2) + g in
   Image.mapi foreground ~f:(fun ~x ~y pixel ->
     let bg_pixel = Image.get background ~x ~y in
     if is_blue pixel then bg_pixel else pixel)
+;;
+
+let%expect_test "transform" =
+  (* This test uses existing files on the filesystem. *)
+  let transformed_image =
+    transform
+      ~foreground:(Image.load_ppm ~filename:"images/oz_bluescreen.ppm")
+      ~background:(Image.load_ppm ~filename:"images/meadow.ppm")
+  in
+  let ref_image =
+    Image.load_ppm ~filename:"images/reference-oz_bluescreen_vfx.ppm"
+  in
+  let difference =
+    Image.foldi transformed_image ~init:0 ~f:(fun ~x ~y acc _image ->
+      if
+        not
+          (Pixel.equal
+             (Image.get transformed_image ~x ~y)
+             (Image.get ref_image ~x ~y))
+      then acc + 1
+      else acc)
+  in
+  print_endline (string_of_int difference);
+  [%expect {|0|}]
 ;;
 
 let command =

@@ -1,7 +1,5 @@
 open Core
 
-(* You need to modify this function to blur the input image
-   based on the provided radius instead of ignoring it. *)
 let transform image ~radius =
   let width = Image.width image in
   let height = Image.height image in
@@ -15,6 +13,30 @@ let transform image ~radius =
       Image.mean_pixel region)
   in
   new_image
+;;
+
+let%expect_test "transform" =
+  (* This test uses existing files on the filesystem. *)
+  let transformed_image =
+    transform
+      (Image.load_ppm ~filename:"images/beach_portrait.ppm")
+      ~radius:3
+  in
+  let ref_image =
+    Image.load_ppm ~filename:"images/reference-beach_portrait_blur.ppm"
+  in
+  let difference =
+    Image.foldi transformed_image ~init:0 ~f:(fun ~x ~y acc _image ->
+      if
+        not
+          (Pixel.equal
+             (Image.get transformed_image ~x ~y)
+             (Image.get ref_image ~x ~y))
+      then acc + 1
+      else acc)
+  in
+  print_endline (string_of_int difference);
+  [%expect {|0|}]
 ;;
 
 let command =
