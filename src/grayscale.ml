@@ -15,16 +15,16 @@ let%expect_test "transform" =
   let transformed_image =
     transform (Image.load_ppm ~filename:"images/beach_portrait.ppm")
   in
-  let pixel_sum image = Image.foldi image ~init:0 ~f:( + ) in
   let ref_image =
-    load_ppm ~filename:"images/reference-beach_portrait_gray.ppm"
+    Image.load_ppm ~filename:"images/reference-beach_portrait_gray.ppm"
   in
-  print_s [%message pixel_sum transformed_image];
-  [%expect
-    {|
-        ()
-        print_s [%message (pixels_sum ref_image)];
-    |}]
+  let difference =
+    Image.foldi transformed_image ~init:0 ~f:(fun ~x ~y acc image ->
+      if Image.get transformed_image ~x ~y != Image.get ref_image ~x ~y
+      then acc + 1)
+  in
+  print_s [%message];
+  [%expect {| (difference) (0)|}]
 ;;
 
 let command =
